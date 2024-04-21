@@ -1,0 +1,13 @@
+{
+    "definition": {
+        "openapi": "3.0.0",
+        "info": {
+            "title": "library Opean APIs",
+            "description": "A sample API",
+            "version": "1.0.0"
+        }
+    },
+    "apis": [
+        "./src/openapi.yaml"
+    ]
+}

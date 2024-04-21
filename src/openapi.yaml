@@ -1,0 +1,106 @@
+openapi: 3.0.0
+info:
+  title: Library Application
+  description:  Library Application Backend Services
+  version: 2.7.20
+paths:
+  /users:
+    get:
+      tags:
+        - Users 
+      responses:
+        200:
+          description: Get all users 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                $ref: '#/components/schemas/User'     
+    post: 
+      tags:
+        - Users
+      description: "Create a new user"
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties:
+                name:
+                  type: string
+              example: 
+                name: "Ebru"
+      responses: 
+        201:
+          description: 'New User Created.'
+          content:
+            application/json:
+              schema:
+                type: object
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: user details with books  that user readied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBookDetail'
+                  
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+    UserBookDetail:
+      type: object
+      properties:
+        id:
+          type: number
+        name: 
+          type: string
+        books:
+          type: object
+          properties:
+            past:
+              type: array
+              items:
+                $ref: '#/components/schemas/Past'
+            present: 
+              type: array
+              items:
+                $ref: '#/components/schemas/Present'
+          
+
+    Past: 
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            example: The Hitchhiker's Guide to the Galaxy
+          userScore:
+            type: number
+            example: 5.33
+    Present:
+      type: array
+      items:
+        type: object
+        properties:
+          name: 
+            type: string
+            example: Neuromancer
