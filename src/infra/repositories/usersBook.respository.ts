@@ -1,6 +1,5 @@
 import { UserBookRepository } from 'domain/entities/entitiesWithRepository';
 import { UsersBook } from 'domain/entities/userBookBorrowings.entity';
-import db from '../../infra/databases/postgres.database';
 import { UserBookStatus } from 'common/constants/bookStatuses.constant';
 import { Book } from 'domain/entities/book.entity';
 import { User } from 'domain/entities/user.entity';
@@ -33,26 +32,27 @@ class UsersBookRespositories {
     status: UserBookStatus,
     score: number,
   ) {
-    await db
-      .createQueryBuilder()
+    await UserBookRepository.createQueryBuilder()
       .update(UsersBook)
       .set({ status, userScore: score })
       .where('id = :id', { id })
       .execute();
   }
 
-  static async getUBooksAndCount(book: Book, status: UserBookStatus) {
-    return UserBookRepository.findAndCount({
-      where: {
-        book,
-        status,
-      },
-    });
+  static async getUBooksUserScoreAverage(book: Book, status: UserBookStatus) {
+    return UserBookRepository.createQueryBuilder('ubook')
+      .select('AVG(ubook.userScore)', 'avegrageUserScore')
+      .groupBy('ubook.bookId')
+      .addGroupBy('ubook.status')
+      .where('ubook.bookId = :bookId and ubook.status = :status', {
+        bookId: book.id,
+        status: status,
+      })
+      .getRawOne();
   }
 
   static async getUserBookDetail(user: User) {
-    return db
-      .createQueryBuilder(UsersBook, 'ubook')
+    return UserBookRepository.createQueryBuilder('ubook')
       .leftJoinAndSelect('ubook.book', 'book')
       .where('ubook.userId = :userId', { userId: user.id })
       .getMany();

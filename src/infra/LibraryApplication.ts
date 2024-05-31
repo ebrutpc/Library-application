@@ -1,10 +1,4 @@
-import express, {
-  Express,
-  Router,
-  Request,
-  Response,
-  NextFunction,
-} from 'express';
+import express, { Express, Router } from 'express';
 require('dotenv').config();
 import { AddressInfo } from 'net';
 import appRoute from '../app.route';

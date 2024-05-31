@@ -29,17 +29,13 @@ class UsersBookService {
     await UsersBookRespositories.updateScoreAndStatus(id, status, score);
   }
 
-  static async calculateReturnedBookAvarageScore(book: Book): Promise<number> {
-    const [UsersBooks, count] = await UsersBookRespositories.getUBooksAndCount(
-      book,
-      UserBookStatus.RETURNED,
-    );
-
-    const totalScore = UsersBooks.reduce(
-      (acc, curVal) => acc + curVal.userScore,
-      0,
-    );
-    return totalScore / count;
+  static async calculateReturnedBookAverageScore(book: Book): Promise<number> {
+    const { avegrageUserScore } =
+      await UsersBookRespositories.getUBooksUserScoreAverage(
+        book,
+        UserBookStatus.RETURNED,
+      );
+    return avegrageUserScore;
   }
 
   static async getUserBookDetail(

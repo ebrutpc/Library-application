@@ -2,7 +2,6 @@ import { Book } from 'domain/entities/book.entity';
 import BookRepositories from 'infra/repositories/book.repository';
 import NotFoundError from 'common/errors/notFound.error';
 import { BookStatus } from 'common/constants/bookStatuses.constant';
-
 class BookService {
   static async getBooks(): Promise<Book[]> {
     return BookRepositories.getBooks();

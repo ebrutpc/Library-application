@@ -19,7 +19,7 @@ export class Book {
   name: string;
 
   @Column({
-    type: 'decimal',
+    type: 'float',
     default: -1,
   })
   score: number;
