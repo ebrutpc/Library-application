@@ -1,4 +1,7 @@
-import { UserBookStatus } from 'common/constants/bookStatuses.constant';
+import {
+  BookStatus,
+  UserBookStatus,
+} from 'common/constants/bookStatuses.constant';
 import { Book } from 'domain/entities/book.entity';
 import { User } from 'domain/entities/user.entity';
 import { Past, Present } from 'domain/models/response/userDetail.dto';
@@ -29,13 +32,13 @@ class UsersBookService {
     await UsersBookRespositories.updateScoreAndStatus(id, status, score);
   }
 
-  static async calculateReturnedBookAverageScore(book: Book): Promise<number> {
-    const { avegrageUserScore } =
-      await UsersBookRespositories.getUBooksUserScoreAverage(
-        book,
-        UserBookStatus.RETURNED,
-      );
-    return avegrageUserScore;
+  static async borrowedUserBook(book: Book, user: User) {
+    book.status = BookStatus.UNAVAILABLE;
+    await UsersBookRespositories.borrowedUserBook(book, user);
+  }
+
+  static async returnedUserBook(book: Book, userBook: UsersBook) {
+    await UsersBookRespositories.returnUserBookUpdates(book, userBook);
   }
 
   static async getUserBookDetail(

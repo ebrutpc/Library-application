@@ -3,6 +3,7 @@ import { UsersBook } from 'domain/entities/userBookBorrowings.entity';
 import { UserBookStatus } from 'common/constants/bookStatuses.constant';
 import { Book } from 'domain/entities/book.entity';
 import { User } from 'domain/entities/user.entity';
+import DataSource from '../../infra/databases/postgres.database';
 
 class UsersBookRespositories {
   static async createUsersBook(user: User, book: Book): Promise<void> {
@@ -41,7 +42,7 @@ class UsersBookRespositories {
 
   static async getUBooksUserScoreAverage(book: Book, status: UserBookStatus) {
     return UserBookRepository.createQueryBuilder('ubook')
-      .select('AVG(ubook.userScore)', 'avegrageUserScore')
+      .select('AVG(ubook.userScore)', 'avgScore')
       .groupBy('ubook.bookId')
       .addGroupBy('ubook.status')
       .where('ubook.bookId = :bookId and ubook.status = :status', {
@@ -56,6 +57,44 @@ class UsersBookRespositories {
       .leftJoinAndSelect('ubook.book', 'book')
       .where('ubook.userId = :userId', { userId: user.id })
       .getMany();
+  }
+
+  static async returnUserBookUpdates(book: Book, userBook: UsersBook) {
+    await DataSource.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.update(
+        UsersBook,
+        { id: userBook.id },
+        { status: userBook.status, userScore: userBook.userScore },
+      );
+      const avegrageUserScore = await this.getUBooksUserScoreAverage(
+        book,
+        UserBookStatus.RETURNED,
+      );
+      book.score =
+        book.score === -1 && !avegrageUserScore
+          ? userBook.userScore
+          : avegrageUserScore.avgScore;
+
+      await transactionalEntityManager.update(
+        Book,
+        { id: book.id },
+        { status: book.status, score: book.score },
+      );
+    });
+  }
+
+  static async borrowedUserBook(book: Book, user: User) {
+    await DataSource.transaction(async (transactionalEntityManager) => {
+      transactionalEntityManager.save(UsersBook, {
+        user,
+        book,
+      });
+      transactionalEntityManager.update(
+        Book,
+        { id: book.id },
+        { status: book.status },
+      );
+    });
   }
 }
 export default UsersBookRespositories;

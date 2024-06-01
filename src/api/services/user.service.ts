@@ -28,11 +28,10 @@ class UserService {
   static async borrowBook(id: number, bookId: number): Promise<void> {
     const user = await this.getUserById(id);
     const book = await BookService.getBookById(bookId);
-    if (book?.status !== BookStatus.AVAILABLE) {
+    if (book?.status === BookStatus.UNAVAILABLE) {
       throw new ConflictError(`${book?.name} is not available.`);
     }
-    await BookService.updateBookStatus(book.id, BookStatus.UNAVAILABLE);
-    await UsersBookService.createUsersBook(user, book);
+    await UsersBookService.borrowedUserBook(book, user);
   }
 
   static async returnBook(
@@ -48,20 +47,13 @@ class UserService {
       UserBookStatus.BORROWED,
     );
     if (!userBook) {
-      throw new NotFoundError(`${book.name} is not found`);
+      throw new NotFoundError(`${book.name} is not borrowed`);
     }
-    await UsersBookService.updateScoreAndStatus(
-      userBook.id,
-      UserBookStatus.RETURNED,
-      score,
-    );
-    const averageScore =
-      await UsersBookService.calculateReturnedBookAverageScore(book);
-    await BookService.updateBookScoreAndStatus(
-      book.id,
-      BookStatus.AVAILABLE,
-      averageScore,
-    );
+
+    book.status = BookStatus.AVAILABLE;
+    userBook.status = UserBookStatus.RETURNED;
+    userBook.userScore = score;
+    await UsersBookService.returnedUserBook(book, userBook);
   }
 }
 
